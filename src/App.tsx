@@ -1,9 +1,29 @@
 import styled from "styled-components";
+import { motion } from "framer-motion";
+
+const myVars = {
+  start: { scale: 0 },
+  end: {
+    scale: 1,
+    rotateZ: 360,
+    transition: {
+      type: "spring",
+      damping: 10,
+    },
+  },
+};
 
 function App() {
   return (
     <Wrapper>
-      <Box />
+      <Box
+        variants={myVars}
+        initial="start"
+        animate="end"
+        //variant는 일종의 애니메이션 스테이지,
+        //initial 초기상태부터 finish 종료상태까지 모든 속성을 넣을 수 있다.
+        //initial, animate(finish)에 객체 키값을 적어주면 된다.
+      />
     </Wrapper>
   );
 }
@@ -16,7 +36,7 @@ const Wrapper = styled.div`
   align-items: center;
 `;
 
-const Box = styled.div`
+const Box = styled(motion.div)`
   width: 200px;
   height: 200px;
   background-color: white;

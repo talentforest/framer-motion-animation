@@ -1,31 +1,31 @@
 import styled from "styled-components";
-import { motion } from "framer-motion";
-import { useRef } from "react";
-
-const boxVariants = {
-  hover: { scale: 1.5, rotateZ: 90 },
-  tap: { scale: 1, borderRadius: "100px" },
-  drag: { backgroundColor: "#333", transition: { duration: 2 } },
-};
+import { motion, useMotionValue } from "framer-motion";
+import { useEffect } from "react";
 
 function App() {
-  const biggerBoxRef = useRef<HTMLDivElement>(null); // typescript에게 이 ref는 div요소라고 알려줌
+  const x = useMotionValue(0);
+  // ✅ MotionValue는 애니메이션 내 수치를 트래킹할 때 필요하다. 디폴트값은 0
+  // 왜 트래킹하냐면 유저가 왼쪽으로 드래깅하는지 오른쪽으로 드래깅하는지 그 방향을 알고 싶을 때 쓴다.
+  // 예를 들어 왼쪽, 오른쪽이냐에 따라 배경색이 바뀐다던가 하는 효과를 줄 수 있다.
+  console.log(x);
+  // ✅ x를 살펴보면 요소를 아무리 움직여 x값을 변하게 해도 콘솔에는 한번만 찍힌다.
+  // 왜냐하면 motionValue는 값이 업데이트 되더라도 렌더링 사이클을 발동시키지 않기 때문이다.
+  // motionValue는 리액트JS 상태값이 아니다. 그렇기 때문에 컴포넌트가 다시 렌더링되지는 않을 것이다.
+  // 값을 계속 추적하지만 react세계에는 존재하지 않는 것이다.
+  // 요소를 조금이라도 움직여서 값이 바뀌면 화면렌더링이 발생하는 것은 굉장히 비효율적인 일이기 때문에 현명한 것이다.
+  useEffect(() => {
+    x.onChange(() => console.log(x.get()));
+  }, [x]);
+  //이렇게 하면 값이 변하는 것을 살펴볼 수 있따.
+
   return (
     <Wrapper>
-      <BiggerBox ref={biggerBoxRef}>
-        <Box
-          variants={boxVariants}
-          whileHover="hover" // 마우스가 위에 있는 동안
-          whileTap="tap" // 마우스를 클릭하고(누르고) 있는 동안
-          drag // x: 가로선만 움직이도록 락 y: 세로선만 움직이도록 락
-          dragSnapToOrigin //다른 위치로 끌었더라도 마우스를 놓으면 다시 원위치로 오게 됨.
-          dragElastic={0.5} // 1은 그냥 밖으로 마우스 포인터를 따라감. 내려갈수록 마우스 포인터에 맞지 않게 끌려감. 0은 원래대로 부모요소 밖을 벗어나지 않음.
-          dragConstraints={biggerBoxRef} // 최대 어디까지 움직일 수 있는지 거리 조정해줌. 만약 부모요소 안에서만 움직여야 한다면 ref를 이용해 지정해준 다음 이 ref를 넣어주면 된다.
-          whileDrag="drag" // 마우스로 드래그하는 동안
-          // ✅ 색상값을 string이 아니라 숫자형으로 적어줘야 애니메이션이 잘 변화됨.
-          // "black" (x) "#000" (o)
-        />
-      </BiggerBox>
+      <button onClick={() => x.set(200)}>Click Me!</button>
+      <Box
+        style={{ x }} // 여기서 useMotionValue를 연결한 것이다. 움직일 때마다 x값이 업데이트될 것이다.
+        drag="x"
+        dragSnapToOrigin
+      />
     </Wrapper>
   );
 }
@@ -36,17 +36,6 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-`;
-
-const BiggerBox = styled(motion.div)`
-  width: 600px;
-  height: 600px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
 `;
 
 const Box = styled(motion.div)`
